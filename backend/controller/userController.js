@@ -136,7 +136,22 @@ exports.updateProfile = async (req, res) => {
 // delete-user
 exports.deleteProfile = async (req, res) => {
   try {
+    const { id } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User Not Found" });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res
+      .status(200)
+      .json({ success: true, message: "user deleted successfully" });
   } catch (error) {
     console.log(error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
