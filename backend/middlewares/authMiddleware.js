@@ -19,7 +19,7 @@ exports.protectRoutes = async (req, res, next) => {
         message: "Invalid User!",
       });
     }
-    const user = await User.findById(verify.user.id).select("-password");
+    const user = await User.findById(verify.userId).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User Not found" });

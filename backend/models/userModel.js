@@ -14,9 +14,8 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: [6, "Password Must Be Atleast 6 Charcters Long"],
+      minlength: [6, "Password must be atleast 6 charcters long"],
       trim: true,
-      select: false,
     },
     email: {
       type: String,
@@ -29,7 +28,7 @@ const userSchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      // required: true,
+      required: true,
     },
   },
   { timestamps: true }

@@ -2,35 +2,39 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../lib/token");
+const cloudinary = require("../utils/cloudinary");
 
-// register user
-// signup
-exports.signup = async (req, res) => {
+// register user,signup
+exports.signup = async (req, res, next) => {
   try {
-    const { email, password, userName, location, profilePic, contactNumber } =
-      req.body;
+    const { email, password, userName, location, contactNumber } = req.body;
 
     if (!userName || !password || !email || !contactNumber) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please Fill All Required Feilds" });
+      res.status(400);
+      return next(new Error("Please Fill All Required Fields"));
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Password Must Be 6 Charcters Long" });
+      res.status(400);
+      return next(new Error("Password must be at least 6 characters long"));
     }
 
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: "E-mail Already exists",
-      });
+      res.status(409);
+      return next(new Error("Email Already exists"));
     }
 
+    // image verify for upload
+    let profilePic = null;
+    if (req.file) {
+      const cloudImg = await cloudinary.uploadOnCloudinary(req.file.path);
+      if (!cloudImg) {
+        return next(new Error("Image not provided"));
+      }
+      profilePic = cloudImg.secure_url;
+    }
     //
     const salt = await bcrypt.genSalt(10);
     const hashPass = await bcrypt.hash(password, salt);
@@ -60,41 +64,39 @@ exports.signup = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    next(error);
   }
 };
 
 // user login
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email And Password Must" });
+      res.status(400);
+      return next(new Error("Email and Password are required"));
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Credentials" });
+      res.status(400);
+      return next(new Error("Invalid Credentials"));
     }
 
     const verifyPass = await bcrypt.compare(password, user.password);
 
     if (!verifyPass) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Credentials" });
+      res.status(400);
+      return next(new Error("Invalid Credentials"));
     }
 
     const token = await generateToken(user._id, res);
 
     res.status(200).json({
       success: true,
-      message: "User Logged in Successfully`",
+      message: "User logged in Successfully",
       user: {
         id: user._id,
         email: user.email,
@@ -106,14 +108,14 @@ exports.login = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.log(error.message);
+    next(error);
   }
 };
 
 // user log-out
-exports.logout = async (req, res) => {
+exports.logout = async (req, res, next) => {
   try {
-    res.cookie("jwt", {
+    res.cookie("token", "", {
       httpOnly: true,
       secure: true,
       sameSite: "None",
@@ -121,37 +123,59 @@ exports.logout = async (req, res) => {
     });
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (error) {
-    console.log(error.message);
+    next(error);
   }
 };
 
 // update-user
-exports.updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res, next) => {
   try {
+    const { contactNumber, userName, location } = req.body;
+    const { id } = req.params;
+
+    //
+    let profilePic = null;
+    if (req.file) {
+      const cloudImage = await cloudinary.uploadOnCloudinary(req.file.path);
+      profilePic = cloudImage.secure_url;
+    }
+
+    //
+    const updateFile = {
+      contactNumber,
+      userName,
+      location,
+    };
+
+    if (profilePic) {
+      updateFile.profilePic = profilePic;
+    }
+
+    const updateUser = await User.findByIdAndUpdate(id, updateFile, {
+      new: true,
+    });
+    res.status(200).json({ success: true, updateUser });
   } catch (error) {
-    console.log(error.message);
+    next(error);
   }
 };
 
 // delete-user
-exports.deleteProfile = async (req, res) => {
+exports.deleteProfile = async (req, res, next) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     const user = await User.findById(id);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User Not Found" });
+      res.status(404);
+      return next(new Error("User Not Found"));
     }
 
     await User.findByIdAndDelete(id);
-
     res
       .status(200)
       .json({ success: true, message: "user deleted successfully" });
   } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ message: "Internal Server Error" });
+    next(error);
   }
 };
