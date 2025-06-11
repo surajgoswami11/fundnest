@@ -18,8 +18,8 @@ router.post("/logout", logout);
 
 router.put(
   "/update-profile/:id",
-  protectRoutes,
   upload.single("profilePic"),
+  protectRoutes,
   updateProfile
 );
 

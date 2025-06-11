@@ -1,26 +1,38 @@
 const cloudinary = require("cloudinary").v2;
-const fs = require("fs");
+const streamifier = require("streamifier");
 
-//
+// Cloudinary config
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// image uplaod
-exports.uploadOnCloudinary = async (filepath) => {
+// Upload file from memory buffer to Cloudinary
+const uploadOnCloudinary = async (filebuffer, folderName = "profiles") => {
   try {
-    if (!filepath) {
-      return null;
-    }
-    const result = await cloudinary.uploader.upload(filepath, {
-      resource_type: "auto",
+    if (!filebuffer) return null;
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "auto",
+          folder: folderName,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+
+      streamifier.createReadStream(filebuffer).pipe(stream);
     });
+
     return result;
   } catch (error) {
-    if (fs.unlinkSync(filepath)) {
-      fs.unlinkSync(filepath);
-    }
+    console.log("Cloudinary upload error:", error);
+    return null;
   }
 };
+
+module.exports = { uploadOnCloudinary };

@@ -2,7 +2,8 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../lib/token");
-const cloudinary = require("../utils/cloudinary");
+const { uploadOnCloudinary } = require("../utils/cloudinary");
+const createError = require("http-errors");
 
 // register user,signup
 exports.signup = async (req, res, next) => {
@@ -10,41 +11,37 @@ exports.signup = async (req, res, next) => {
     const { email, password, userName, location, contactNumber } = req.body;
 
     if (!userName || !password || !email || !contactNumber) {
-      res.status(400);
-      return next(new Error("Please Fill All Required Fields"));
+      return next(createError(400, "All feilds Required"));
     }
 
     if (password.length < 6) {
-      res.status(400);
-      return next(new Error("Password must be at least 6 characters long"));
+      return next(createError(400, "Password must be at least 6 characters"));
     }
 
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
-      res.status(409);
-      return next(new Error("Email Already exists"));
+      return next(createError(409, "Email already exists"));
     }
 
+    //
+    let imageurl = "";
     // image verify for upload
-    let profilePic = null;
     if (req.file) {
-      const cloudImg = await cloudinary.uploadOnCloudinary(req.file.path);
-      if (!cloudImg) {
-        return next(new Error("Image not provided"));
-      }
-      profilePic = cloudImg.secure_url;
+      const result = await uploadOnCloudinary(req.file.buffer);
+      console.log(result);
+
+      imageurl = result?.secure_url;
     }
+
     //
     const salt = await bcrypt.genSalt(10);
     const hashPass = await bcrypt.hash(password, salt);
-
     const user = await User.create({
       userName,
       email,
       password: hashPass,
       location,
-      profilePic,
+      profilePic: imageurl,
       contactNumber,
     });
 
@@ -74,22 +71,19 @@ exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400);
-      return next(new Error("Email and Password are required"));
+      return next(createError(400, "Email and Password are required"));
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      res.status(400);
-      return next(new Error("Invalid Credentials"));
+      return next(createError(401, "Invalid Credentials"));
     }
 
     const verifyPass = await bcrypt.compare(password, user.password);
 
     if (!verifyPass) {
-      res.status(400);
-      return next(new Error("Invalid Credentials"));
+      return next(createError(401, "Invalid Credentials"));
     }
 
     const token = await generateToken(user._id, res);
@@ -127,23 +121,21 @@ exports.logout = async (req, res, next) => {
   }
 };
 
-// update-user
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { contactNumber, userName, location } = req.body;
+    const { userName, contactNumber, location } = req.body;
     const { id } = req.params;
 
-    //
-    let profilePic = null;
+    let profilePic = "";
+
     if (req.file) {
-      const cloudImage = await cloudinary.uploadOnCloudinary(req.file.path);
-      profilePic = cloudImage.secure_url;
+      const updateImg = await uploadOnCloudinary(req.file.buffer);
+      profilePic = updateImg.secure_url;
     }
 
-    //
     const updateFile = {
-      contactNumber,
       userName,
+      contactNumber,
       location,
     };
 
@@ -154,6 +146,10 @@ exports.updateProfile = async (req, res, next) => {
     const updateUser = await User.findByIdAndUpdate(id, updateFile, {
       new: true,
     });
+
+    if (!updateUser) {
+      return next(createError(404, "User not found"));
+    }
     res.status(200).json({ success: true, updateUser });
   } catch (error) {
     next(error);
@@ -167,8 +163,7 @@ exports.deleteProfile = async (req, res, next) => {
 
     const user = await User.findById(id);
     if (!user) {
-      res.status(404);
-      return next(new Error("User Not Found"));
+      return next(createError(404, "User Not Found"));
     }
 
     await User.findByIdAndDelete(id);
