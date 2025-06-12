@@ -23,6 +23,6 @@ router.put(
   updateProfile
 );
 
-router.delete("/:id", deleteProfile);
+router.delete("/:id", protectRoutes, deleteProfile);
 
 module.exports = router;
