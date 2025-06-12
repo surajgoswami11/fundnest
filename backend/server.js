@@ -4,7 +4,9 @@ const cookieParser = require("cookie-parser");
 const { connectDb } = require("./lib/db");
 dotenv.config();
 const errorHandler = require("./middlewares/errorHandler");
-
+const passport = require("passport");
+require("./utils/passport");
+const session = require("express-session");
 //routes
 const user = require("./routes/userRoutes");
 
@@ -16,12 +18,21 @@ const PORT = process.env.PORT;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 //
 connectDb();
 
 //routes
 app.use("/api/auth", user);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //error handler
 app.use(errorHandler);
