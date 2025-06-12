@@ -52,6 +52,7 @@ passport.use(
             profilePic: profile.photos?.[0]?.value,
           });
         }
+        return done(null, user);
       } catch (error) {
         console.log(error);
       }

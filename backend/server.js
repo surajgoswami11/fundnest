@@ -32,7 +32,6 @@ connectDb();
 //routes
 app.use("/api/auth", user);
 app.use(passport.initialize());
-app.use(passport.session());
 
 //error handler
 app.use(errorHandler);

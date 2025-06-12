@@ -23,7 +23,6 @@ router.get(
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const token = generateToken(req.user._id);
-    // Redirect to frontend with token
     res.redirect(`http://localhost:3000/oauth-success?token=${token}`);
   }
 );
