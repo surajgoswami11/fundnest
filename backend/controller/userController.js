@@ -8,7 +8,8 @@ const createError = require("http-errors");
 // register user,signup
 exports.signup = async (req, res, next) => {
   try {
-    const { email, password, userName, location, contactNumber } = req.body;
+    const { email, password, userName, contactNumber, country, state, city } =
+      req.body;
 
     if (!userName || !password || !email || !contactNumber) {
       return next(createError(400, "All feilds Required"));
@@ -40,9 +41,11 @@ exports.signup = async (req, res, next) => {
       userName,
       email,
       password: hashPass,
-      location,
       profilePic: imageurl,
       contactNumber,
+      country,
+      state,
+      city,
     });
 
     const token = await generateToken(user._id, res);
@@ -55,8 +58,10 @@ exports.signup = async (req, res, next) => {
         userName: user.userName,
         email: user.email,
         profilePic: user.profilePic,
-        location: user.location,
         contactNumber: user.contactNumber,
+        country: user.country,
+        state: user.state,
+        city: user.city,
       },
       token,
     });

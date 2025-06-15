@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     contactNumber: {
-      type: Number,
+      type: String,
       required: true,
     },
     password: {
@@ -21,14 +21,33 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+    },
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+      required: true,
     },
     profilePic: {
       type: String,
       default: "",
     },
-    location: {
+    country: {
       type: String,
       required: true,
+    },
+    state: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     googleId: String,
     facebookId: String,

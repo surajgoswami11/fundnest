@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const { connectDb } = require("./lib/db");
+const cors = require("cors");
 dotenv.config();
 const errorHandler = require("./middlewares/errorHandler");
 const passport = require("passport");
@@ -11,10 +12,17 @@ const session = require("express-session");
 const user = require("./routes/userRoutes");
 
 //port and app initilize
+
 const app = express();
 const PORT = process.env.PORT;
 
 //middlewares
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

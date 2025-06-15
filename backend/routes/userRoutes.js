@@ -9,6 +9,7 @@ const {
 //
 const { protectRoutes } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/multer");
+const passport = require("passport");
 
 const router = express.Router();
 

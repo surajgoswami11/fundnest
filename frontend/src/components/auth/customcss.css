@@ -1,0 +1,19 @@
+.stdropdown-container {
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+}
+.stdropdown-input {
+  padding: 0;
+  position: relative;
+}
+.stdropdown-tools {
+  position: absolute;
+  right: 10px;
+}
+.stdropdown-tools svg {
+  fill: #171717;
+  width: 15px;
+  height: 15px;
+  opacity: 0.8;
+}
