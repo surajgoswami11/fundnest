@@ -33,18 +33,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    country: {
-      type: String,
-      required: true,
-    },
-    state: {
-      type: String,
-      required: true,
-    },
-    city: {
-      type: String,
-      required: true,
-    },
     isVerified: {
       type: Boolean,
       default: false,

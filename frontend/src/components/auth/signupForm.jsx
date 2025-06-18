@@ -22,6 +22,7 @@ import {
   CitySelect,
   PhonecodeSelect,
 } from "react-country-state-city";
+import PhoneInput from "react-phone-number-input";
 import "react-country-state-city/dist/react-country-state-city.css";
 import { postData, postFormData } from "@/helper/common";
 import { toast } from "react-toastify";
@@ -186,58 +187,16 @@ export default function SignupForm() {
             InputLabelProps={{ sx: { color: "white" } }}
           />
 
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={6}>
-              <Box>
-                <CountrySelect
-                  containerClassName="form-group"
-                  inputClassName=""
-                  onChange={(_country) => setCountry(_country)}
-                  onTextChange={(_txt) => console.log(_txt)}
-                  placeHolder="Select Country"
-                />
-              </Box>
-            </Grid>
-            <Grid item xs={6}>
-              <Box>
-                <StateSelect
-                  countryid={country?.id}
-                  containerClassName="form-group"
-                  inputClassName=""
-                  onChange={(_state) => setState(_state)}
-                  onTextChange={(_txt) => console.log(_txt)}
-                  defaultValue={state}
-                  placeHolder="Select State"
-                />
-              </Box>
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={6}>
-              <Box>
-                <CitySelect
-                  countryid={country?.id}
-                  stateid={state?.id}
-                  onChange={(_city) => setCity(_city)}
-                  defaultValue={city}
-                  placeHolder="Select City"
-                />
-              </Box>
-            </Grid>
-            <Grid item xs={6}>
-              <Box>
-                <PhonecodeSelect
-                  containerClassName="form-group"
-                  inputClassName=""
-                  onChange={(_code) => setContactNumber(_code)}
-                  onTextChange={(_txt) => console.log(_txt)}
-                  defaultValue={contactNumber}
-                  placeHolder="Select Phone Code"
-                />
-              </Box>
-            </Grid>
-          </Grid>
+          <Box>
+            <PhoneInput
+              id="whatsApp"
+              className="phone__input_field student__input_field"
+              placeholder="Enter phone number"
+              value={mobile}
+              onChange={setMobile}
+              defaultCountry="IN"
+            />
+          </Box>
 
           <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Button

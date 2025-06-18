@@ -9,10 +9,9 @@ const passport = require("passport");
 require("./utils/passport");
 const session = require("express-session");
 //routes
-const user = require("./routes/userRoutes");
+const user = require("./routes/authRoutes");
 
 //port and app initilize
-
 const app = express();
 const PORT = process.env.PORT;
 
@@ -26,6 +25,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard cat",

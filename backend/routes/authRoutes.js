@@ -5,7 +5,7 @@ const {
   logout,
   signup,
   login,
-} = require("../controller/userController");
+} = require("../controller/authController");
 //
 const { protectRoutes } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/multer");

@@ -8,8 +8,7 @@ const createError = require("http-errors");
 // register user,signup
 exports.signup = async (req, res, next) => {
   try {
-    const { email, password, userName, contactNumber, country, state, city } =
-      req.body;
+    const { email, password, userName, contactNumber } = req.body;
 
     if (!userName || !password || !email || !contactNumber) {
       return next(createError(400, "All feilds Required"));
@@ -26,7 +25,6 @@ exports.signup = async (req, res, next) => {
 
     //
     let imageurl = "";
-    // image verify for upload
     if (req.file) {
       const result = await uploadOnCloudinary(req.file.buffer);
       console.log(result);
@@ -43,9 +41,6 @@ exports.signup = async (req, res, next) => {
       password: hashPass,
       profilePic: imageurl,
       contactNumber,
-      country,
-      state,
-      city,
     });
 
     const token = await generateToken(user._id, res);
@@ -59,9 +54,6 @@ exports.signup = async (req, res, next) => {
         email: user.email,
         profilePic: user.profilePic,
         contactNumber: user.contactNumber,
-        country: user.country,
-        state: user.state,
-        city: user.city,
       },
       token,
     });
@@ -101,7 +93,6 @@ exports.login = async (req, res, next) => {
         email: user.email,
         userName: user.userName,
         profilePic: user.profilePic,
-        location: user.location,
         contactNumber: user.contactNumber,
       },
       token,
@@ -128,7 +119,7 @@ exports.logout = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { userName, contactNumber, location } = req.body;
+    const { userName, contactNumber } = req.body;
     const { id } = req.params;
 
     let profilePic = "";
@@ -141,7 +132,6 @@ exports.updateProfile = async (req, res, next) => {
     const updateFile = {
       userName,
       contactNumber,
-      location,
     };
 
     if (profilePic) {
