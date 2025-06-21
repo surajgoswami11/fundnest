@@ -35,7 +35,13 @@ const userSchema = new mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
+      enum: [true, false],
       default: false,
+    },
+    kycStatus: {
+      type: String,
+      enum: ["pending", "resolve", "reject"],
+      default: "pending",
     },
     googleId: String,
     facebookId: String,

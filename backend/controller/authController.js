@@ -8,9 +8,9 @@ const createError = require("http-errors");
 // register user,signup
 exports.signup = async (req, res, next) => {
   try {
-    const { email, password, userName, contactNumber } = req.body;
+    const { email, password, userName, role } = req.body;
 
-    if (!userName || !password || !email || !contactNumber) {
+    if (!userName || !password || !email) {
       return next(createError(400, "All feilds Required"));
     }
 
@@ -24,23 +24,17 @@ exports.signup = async (req, res, next) => {
     }
 
     //
-    let imageurl = "";
-    if (req.file) {
-      const result = await uploadOnCloudinary(req.file.buffer);
-      console.log(result);
-
-      imageurl = result?.secure_url;
-    }
-
-    //
     const salt = await bcrypt.genSalt(10);
     const hashPass = await bcrypt.hash(password, salt);
+
+    //
+    // const roleToSave = role === "admin" ? "user" : role || "user";
+
     const user = await User.create({
       userName,
       email,
       password: hashPass,
-      profilePic: imageurl,
-      contactNumber,
+      role,
     });
 
     const token = await generateToken(user._id, res);
@@ -52,8 +46,7 @@ exports.signup = async (req, res, next) => {
         id: user._id,
         userName: user.userName,
         email: user.email,
-        profilePic: user.profilePic,
-        contactNumber: user.contactNumber,
+        role: user.role,
       },
       token,
     });
@@ -92,7 +85,6 @@ exports.login = async (req, res, next) => {
         id: user._id,
         email: user.email,
         userName: user.userName,
-        profilePic: user.profilePic,
         contactNumber: user.contactNumber,
       },
       token,
@@ -112,40 +104,6 @@ exports.logout = async (req, res, next) => {
       maxAge: 0,
     });
     res.status(200).json({ success: true, message: "Logged out successfully" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.updateProfile = async (req, res, next) => {
-  try {
-    const { userName, contactNumber } = req.body;
-    const { id } = req.params;
-
-    let profilePic = "";
-
-    if (req.file) {
-      const updateImg = await uploadOnCloudinary(req.file.buffer);
-      profilePic = updateImg.secure_url;
-    }
-
-    const updateFile = {
-      userName,
-      contactNumber,
-    };
-
-    if (profilePic) {
-      updateFile.profilePic = profilePic;
-    }
-
-    const updateUser = await User.findByIdAndUpdate(id, updateFile, {
-      new: true,
-    });
-
-    if (!updateUser) {
-      return next(createError(404, "User not found"));
-    }
-    res.status(200).json({ success: true, updateUser });
   } catch (error) {
     next(error);
   }

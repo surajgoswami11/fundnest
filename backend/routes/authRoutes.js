@@ -1,14 +1,7 @@
 const express = require("express");
-const {
-  updateProfile,
-  deleteProfile,
-  logout,
-  signup,
-  login,
-} = require("../controller/authController");
+const { logout, login } = require("../controller/authController");
 //
-const { protectRoutes } = require("../middlewares/authMiddleware");
-const upload = require("../middlewares/multer");
+
 const passport = require("passport");
 
 const router = express.Router();
@@ -43,17 +36,7 @@ router.get(
   }
 );
 
-router.post("/signup", upload.single("profilePic"), signup);
 router.post("/login", login);
 router.post("/logout", logout);
-
-router.put(
-  "/update-profile/:id",
-  upload.single("profilePic"),
-  protectRoutes,
-  updateProfile
-);
-
-router.delete("/:id", protectRoutes, deleteProfile);
 
 module.exports = router;
